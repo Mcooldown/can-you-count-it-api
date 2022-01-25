@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\ScoreController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
-Route::post('/store-score', [ScoreController::class, 'storeScore']);
 Route::post('/levels', [LevelController::class, 'getAllLevels']);
-Route::post('/levels/{levelId}', [LevelController::class, 'getLevelById']);
+Route::post('/get-level-by-id', [LevelController::class, 'getLevelById']);
+Route::post('/store-score', [ScoreController::class, 'storeScore']);
+Route::post('/get-level-with-scores', [ScoreController::class, 'getLevelWithScores']);

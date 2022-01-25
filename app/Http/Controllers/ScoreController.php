@@ -19,47 +19,60 @@ class ScoreController extends Controller
             'score' => 'required|integer',
         ]);
 
+        $level = Level::find($request->level_id);
+        $user = User::find($request->user_id);
+
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'error' => $validator->errors()
-            ]);
+            $message = $validator->errors();
+        } else if (!$level) {
+            $message = "Level not found";
+        } else {
+            if (!$request->username && !$user) {
+                $message = "User not found";
+            } else {
+
+                $newScore = Score::create([
+                    'username' => $request->username ? trim($request->username, " ") . '#' . uniqid() : null,
+                    'user_id' => $request->user_id ? $request->user_id : null,
+                    'level_id' => $request->level_id,
+                    'score' => $request->score,
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'score' => Score::with(['level', 'user'])->where('id', $newScore->id)->first(),
+                ]);
+            }
         }
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+        ]);
+    }
+
+    public function getLevelWithScores(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'level_id' => 'required|integer',
+        ]);
 
         $level = Level::find($request->level_id);
 
-        if ($level) {
-
-            if ($request->user_id) {
-                $user = User::find($request->user_id);
-
-                if (!$user) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'User not found',
-                    ]);
-                }
-            }
-
-            $newScore = Score::create([
-                'username' => $request->username ? $request->username : null,
-                'user_id' => $request->user_id ? $request->user_id : null,
-                'level_id' => $request->level_id,
-                'score' => $request->score,
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'score' => Score::with(['level', 'user'])->where('id', $newScore->id)->first(),
-            ]);
+        if ($validator->fails()) {
+            $message = $validator->errors();
+        } else if (!$level) {
+            $message = "Level not found";
         } else {
             return response()->json([
-                'success' => false,
-                'message' => 'Level not found',
+                'success' => true,
+                'level' => Level::find($request->level_id),
+                'scores' => Score::with('user')->where('level_id', $request->level_id)->get(),
             ]);
         }
+
         return response()->json([
-            'success' => true,
+            'success' => false,
+            'message' => $message
         ]);
     }
 }

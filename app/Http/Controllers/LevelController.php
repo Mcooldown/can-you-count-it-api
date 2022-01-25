@@ -17,26 +17,17 @@ class LevelController extends Controller
 
     public function getLevelById(Request $request)
     {
-        $levelId = $request->levelId;
+        $level = Level::find($request->level_id);
 
-        if ($levelId) {
-            $level = Level::find($levelId);
-
-            if ($level) {
-                return response()->json([
-                    'success' => true,
-                    'level' => $level,
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Level Not Found',
-                ]);
-            }
+        if ($level) {
+            return response()->json([
+                'success' => true,
+                'level' => $level,
+            ]);
         } else {
             return response()->json([
                 'success' => false,
-                'message' => 'Level ID Not Found'
+                'message' => 'Level Not Found',
             ]);
         }
     }
