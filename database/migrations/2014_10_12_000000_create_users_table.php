@@ -18,10 +18,10 @@ class CreateUsersTable extends Migration
             $table->string('username')->unique();
             $table->string('email')->unique();
             $table->string('password');
-            $table->integer('level');
-            $table->integer('current_exp');
-            $table->integer('target_exp');
-            $table->integer('coins');
+            $table->integer('level')->default(1);
+            $table->integer('current_exp')->default(0);
+            $table->integer('target_exp')->default(500);
+            $table->integer('coins')->default(0);
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();

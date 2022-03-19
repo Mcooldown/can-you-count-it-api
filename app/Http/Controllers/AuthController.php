@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use JWTAuth;
-use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
@@ -15,33 +15,51 @@ class AuthController extends Controller
     {
         $data = $request->only('username', 'email', 'password');
 
-        UtilController::validateRequest($data, [
+        $validation = Validator::make($data, [
             'username' => 'required|string|unique:users',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:6|max:50',
         ]);
 
-        $user = User::create([
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => Hash::make('password')
-        ]);
+        if ($validation->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validation->errors()
+            ], Response::HTTP_BAD_REQUEST);
+        }
 
-        return response()->json([
-            'success' => true,
-            'user' => $user
-        ]);
+        try {
+            $user = User::create([
+                'username' => $request->username,
+                'email' => $request->email,
+                'password' => bcrypt($request->password)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'user' => $user
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => $th->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     public function authenticateUser(Request $request)
     {
-
-        $data = $request->only('username', 'email', 'password');
-        UtilController::validateRequest($data, [
-            'username' => 'required_if:email,null|string',
-            'email' => 'required_if:username,null|email',
+        $data = $request->only('username', 'password');
+        $validation = Validator::make($data, [
+            'username' => 'required|string',
             'password' => 'required|string'
         ]);
+        if ($validation->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validation->errors()
+            ], Response::HTTP_BAD_REQUEST);
+        }
 
         try {
             if (!$token = JWTAuth::attempt($data)) {
@@ -53,7 +71,7 @@ class AuthController extends Controller
         } catch (\Throwable $th) {
             return response()->json([
                 'success' => false,
-                'message' => 'Could not create token'
+                'message' => $th->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
@@ -63,39 +81,36 @@ class AuthController extends Controller
         ]);
     }
 
-    public function logout(Request $request)
+    public function logout()
     {
-        $data = $request->only('token');
-        UtilController::validateRequest($data, [
-            'token' => 'required|string'
-        ]);
-
         try {
-            JWTAuth::invalidate($request->token);
+            JWTAuth::invalidate(JWTAuth::getToken());
 
             return response()->json([
                 'success' => true,
                 'message' => 'User has been logged out'
             ]);
-        } catch (JWTException $exception) {
+        } catch (Exception $th) {
             return response()->json([
                 'success' => false,
-                'message' => 'Sorry, user cannot be logged out'
+                'message' => $th->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function getAuthUser(Request $request)
+    public function getAuthUser()
     {
-        $data = $request->only('token');
-        UtilController::validateRequest($data, [
-            'token' => 'required|string'
-        ]);
-
-        $user = JWTAuth::authenticate($request->token);
-        return response()->json([
-            'success' => true,
-            'user' => $user
-        ]);
+        try {
+            $user = JWTAuth::authenticate(JWTAuth::getToken());
+            return response()->json([
+                'success' => true,
+                'user' => $user
+            ]);
+        } catch (Exception $th) {
+            return response()->json([
+                'success' => false,
+                'message' => $th->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

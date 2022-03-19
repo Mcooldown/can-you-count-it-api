@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 
 // Auth
 Route::post('/add-user', [AuthController::class, 'addUser']);
-Route::post('/authenticate-user', [AuthController::class, 'authenticate-user']);
+Route::post('/authenticate-user', [AuthController::class, 'authenticateUser']);
 Route::post('/logout', [AuthController::class, 'logout']);
 Route::post('get-auth-user', [AuthController::class, 'getAuthUser']);
 
@@ -39,5 +39,6 @@ Route::post('/get-all-items', [ItemController::class, 'getAllItems']);
 Route::post('/get-item-by-id', [ItemController::class, 'getItemById']);
 
 // User Item
+Route::post('/get-all-user-items', [UserItemController::class, 'getAllUserItems']);
 Route::post('/add-user-item', [UserItemController::class, 'addUserItem']);
 Route::post('/use-user-item', [UserItemController::class, 'useUserItem']);
