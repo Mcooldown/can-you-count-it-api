@@ -17,18 +17,14 @@ class LevelController extends Controller
 
     public function getLevelById(Request $request)
     {
-        $level = Level::find($request->level_id);
+        $data = $request->only('level_id');
+        UtilController::validateRequest($data, [
+            'level_id' => 'required|integer'
+        ]);
 
-        if ($level) {
-            return response()->json([
-                'success' => true,
-                'level' => $level,
-            ]);
-        } else {
-            return response()->json([
-                'success' => false,
-                'message' => 'Level Not Found',
-            ]);
-        }
+        return response()->json([
+            'success' => true,
+            'level' => Level::find($request->level_id)
+        ]);
     }
 }

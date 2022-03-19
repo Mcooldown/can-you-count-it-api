@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ItemController;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\ScoreController;
+use App\Http\Controllers\UserItemController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,11 +18,26 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
+// Auth
+Route::post('/add-user', [AuthController::class, 'addUser']);
+Route::post('/authenticate-user', [AuthController::class, 'authenticate-user']);
+Route::post('/logout', [AuthController::class, 'logout']);
+Route::post('get-auth-user', [AuthController::class, 'getAuthUser']);
 
-Route::post('/levels', [LevelController::class, 'getAllLevels']);
+// Level
+Route::post('/get-all-levels', [LevelController::class, 'getAllLevels']);
 Route::post('/get-level-by-id', [LevelController::class, 'getLevelById']);
-Route::post('/store-score', [ScoreController::class, 'storeScore']);
-Route::post('/get-level-with-scores', [ScoreController::class, 'getLevelWithScores']);
+
+// Score
+Route::post('/add-score', [ScoreController::class, 'addScore']);
+Route::post('/get-scores-by-id', [ScoreController::class, 'getScoreById']);
+Route::post('/get-scores-by-level-id', [ScoreController::class, 'getScoresByLevelId']);
+Route::post('/get-scores-by-user-id', [ScoreController::class, 'getScoresByUserId']);
+
+// Item
+Route::post('/get-all-items', [ItemController::class, 'getAllItems']);
+Route::post('/get-item-by-id', [ItemController::class, 'getItemById']);
+
+// User Item
+Route::post('/add-user-item', [UserItemController::class, 'addUserItem']);
+Route::post('/use-user-item', [UserItemController::class, 'useUserItem']);
